@@ -60420,7 +60420,7 @@ if (false) {} else {
 /*!***************************************************************!*\
   !*** ./node_modules/react-router-dom/esm/react-router-dom.js ***!
   \***************************************************************/
-/*! exports provided: BrowserRouter, HashRouter, Link, NavLink, MemoryRouter, Prompt, Redirect, Route, Router, StaticRouter, Switch, generatePath, matchPath, withRouter, __RouterContext */
+/*! exports provided: MemoryRouter, Prompt, Redirect, Route, Router, StaticRouter, Switch, generatePath, matchPath, withRouter, __RouterContext, BrowserRouter, HashRouter, Link, NavLink */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -66258,9 +66258,27 @@ function (_Component) {
         class: "col-md-4 login-sec"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", {
         class: "text-center"
-      }, "Login Now"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("form", {
+      }, "Join our community"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("form", {
         class: "login-form"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+        for: "exampleInputEmail1",
+        class: "text-uppercase"
+      }, "First Name"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        type: "text",
+        class: "form-control",
+        placeholder: "First Name"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+        for: "exampleInputEmail1",
+        class: "text-uppercase"
+      }, "Last Name"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        type: "text",
+        class: "form-control",
+        placeholder: "Last Name"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         class: "form-group"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
         for: "exampleInputEmail1",
@@ -66268,7 +66286,16 @@ function (_Component) {
       }, "Username"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
         type: "text",
         class: "form-control",
-        placeholder: ""
+        placeholder: "Username"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+        for: "exampleInputEmail1",
+        class: "text-uppercase"
+      }, "Email"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        type: "email",
+        class: "form-control",
+        placeholder: "Email"
       })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         class: "form-group"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
@@ -66277,7 +66304,7 @@ function (_Component) {
       }, "Password"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
         type: "password",
         class: "form-control",
-        placeholder: ""
+        placeholder: "Password"
       })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         class: "form-check"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {

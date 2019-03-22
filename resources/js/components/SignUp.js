@@ -15,15 +15,27 @@ import axios from 'axios'
                 <div class="container">
                     <div class="row">
                         <div class="col-md-4 login-sec">
-                            <h2 class="text-center">Login Now</h2>
+                            <h2 class="text-center">Join our community</h2>
                             <form class="login-form">
                                 <div class="form-group">
+                                    <label for="exampleInputEmail1" class="text-uppercase">First Name</label>
+                                    <input type="text" class="form-control" placeholder="First Name"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1" class="text-uppercase">Last Name</label>
+                                    <input type="text" class="form-control" placeholder="Last Name"/>
+                                </div>
+                                <div class="form-group">
                                     <label for="exampleInputEmail1" class="text-uppercase">Username</label>
-                                    <input type="text" class="form-control" placeholder=""/>
+                                    <input type="text" class="form-control" placeholder="Username"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1" class="text-uppercase">Email</label>
+                                    <input type="email" class="form-control" placeholder="Email"/>
                                 </div>
                                 <div class="form-group">
                                     <label for="exampleInputPassword1" class="text-uppercase">Password</label>
-                                    <input type="password" class="form-control" placeholder=""/>
+                                    <input type="password" class="form-control" placeholder="Password"/>
                                 </div>
                                 <div class="form-check">
                                     <label class="form-check-label">
