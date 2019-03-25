@@ -13,12 +13,26 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('logout', 'ApiAuthController@logout');
+Route::post('refresh', 'ApiAuthController@refresh');
+Route::get('user', 'ApiAuthController@user');
 
-Route::get('bands', 'BandController@index');
+Route::post('album', 'AlbumController@create');
+Route::get('album', 'AlbumController@read');
+Route::put('album', 'AlbumController@update');
+Route::delete('album', 'AlbumController@delete');
 
-Route::get('band/{id}', 'BandController@show');
+Route::post('band', 'BandController@create');
+Route::get('band', 'BandController@index');
+//Route::get('band', 'BandController@read');
+Route::put('band', 'BandController@update');
+Route::delete('band', 'BandController@delete');
 
-Route::post('band', 'BandController@store');
+    Route::post('song', 'AlbumController@create');
+    Route::get('song', 'AlbumController@read');
+    Route::put('song', 'AlbumController@update');
+    Route::delete('song', 'SongController@delete');
+
+Route::post('signUp', 'AuthController@signUp');
+
+Route::post('login', 'AuthController@login');

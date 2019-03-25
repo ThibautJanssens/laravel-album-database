@@ -16,11 +16,13 @@ class CreateAlbumsTable extends Migration
         Schema::create('albums', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title');
-            //$table->uuid('img');
+            $table->string('label');
+            $table->string('img');
             $table->year('year');
             $table->integer('genre');
             $table->integer('band');
             $table->integer('comment');
+            $table->integer('note');
             $table->foreign('comment')->references('id')->on('comments');
             $table->foreign('genre')->references('id')->on('genres');
             $table->foreign('band')->references('id')->on('bands');

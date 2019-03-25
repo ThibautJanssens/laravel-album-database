@@ -11,7 +11,7 @@ import axios from 'axios'
       }
 
       componentDidMount () {
-        axios.get('/api/bands').then(response => {
+        axios.get('/api/band').then(response => {
           this.setState({
             bands: response.data
           })

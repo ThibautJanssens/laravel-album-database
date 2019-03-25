@@ -6,7 +6,6 @@ import Home from './Home';
 import BandList from './BandList';
 import AlbumList from './AlbumList.js';
 import SongList from './SongList';
-import Contact from './Contact';
 import Login from './Login';
 import SignUp from './SignUp';
 
@@ -21,7 +20,6 @@ class App extends Component {
                 <Route exact path='/bands' component={BandList} />
                 <Route exact path='/albums' component={AlbumList} />
                 <Route exact path='/songs' component={SongList} />
-                <Route exact path='/contact' component={Contact} />
                 <Route exact path='/login' component={Login} />
                 <Route exact path='/signup' component={SignUp} />
               </Switch>

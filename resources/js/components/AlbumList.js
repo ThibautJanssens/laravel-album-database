@@ -1,63 +1,71 @@
 import axios from 'axios'
 import React, {Component} from 'react'
 import {Link} from 'react-router-dom'
+import flip from '../../../public/script/flip';
+import { watchFile } from 'fs';
 
 class AlbumList extends Component {
     constructor() {
-        super()
+        super();
         this.state = {
             bands: []
         }
     }
 
     componentDidMount() {
-        axios.get('/api/bands').then(response => {
+        axios.get('/api/band').then(response => {
             this.setState({
                 bands: response.data
             })
+            console.log(bands)
         })
     }
 
     render() {
         const {bands} = this.state
         return (
-            <section id="team" class="pb-5" >
-                <link rel="stylesheet" href="./css/flip.css"/>
-                <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
-                <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-                <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-                <div class="container">
-                    <h5 class="section-title h1"> All Albums</h5>
-                    <div class="row">
-                        { bands.map(band => (
-                            <div class="col-xs-12 col-sm-6 col-md-4">
-                                <div class="image-flip" ontouchstart="this.classList.toggle('hover');">
-                                    <div class="mainflip">
-                                        <div class="frontside">
-
-                                            <div class="card">
-                                                <div class="card-body text-center">
-                                                    <h4 class="card-title"> {band.name} </h4>
-                                                    <p class="card-text"> This is basic card with image on top, title, description and button. </p>
-                                                    <a href="#" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i></a>
-                                                </div>
-                                            </div>
+                <section className="container">
+                    <link rel="stylesheet" href="./css/flip.css"/>
+                    {/* <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
+                    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> */}
+                    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+                    <div className="row active-with-click">
+                        <div className="col-md-4 col-sm-6 col-xs-12">
+                            { bands.map(band => (
+                                <div className="material-card Red">
+                                    <h2>
+                                        <span>The Sin And The Sentence</span>
+                                        <strong>
+                                            <i className="fa fa-fw fa-star"></i>
+                                                <Link to='/albums'>{band.name} </Link>
+                                        </strong>
+                                    </h2>
+                                    <div className="mc-content">
+                                        <div className="img-container">
+                                            <img className="img-responsive" src="http://u.lorenzoferrara.net/marlenesco/material-card/thumb-christopher-walken.jpg"/>
                                         </div>
-                                        <div class="backside">
-                                            <div class="card">
-                                                <div class="card-body text-center mt-4">
-                                                    <h4 class="card-title"> {band.name} </h4>
-                                                    <p class="card-text"> This is basic card with image on top, title, description and button.This is basic card with image on top, title, description and button.This is basic card with image on top, title, description and button. </p>
-                                                </div>
-                                            </div>
+                                        <div className="mc-description">
+                                            song list
                                         </div>
                                     </div>
+                                    <a className="mc-btn-action" id="btn-action">
+                                        <i className="fa fa-bars"></i>
+                                    </a>
+                                    <div className="mc-footer">
+                                        <h4>
+                                            Social
+                                        </h4>
+                                        <a className="fa fa-fw fa-facebook"></a>
+                                        <a className="fa fa-fw fa-twitter"></a>
+                                        <a className="fa fa-fw fa-linkedin"></a>
+                                        <a className="fa fa-fw fa-google-plus"></a>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </section>
+                    <script src={flip}></script>
+                </section>
         )
     }
 }

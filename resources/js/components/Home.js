@@ -4,14 +4,14 @@
     class Home extends Component {
       render () {
         return (
-            <div class="main-content">
-                <div class="row m-0 justify-content-center">
-                <div class="card-container col-lg-6">
-                    <div class="card card-articles">Latest Albums
-                        <div class="card-body">
-                            <h5 class="card-title title"></h5>
-                            <h6 class="card-author author"></h6>
-                            <div class="card-text content"></div>
+            <div className="main-content">
+                <div className="row m-0 justify-content-center">
+                <div className="card-container col-lg-6">
+                    <div className="card card-articles">Latest Albums
+                        <div className="card-body">
+                            <h5 className="card-title title"></h5>
+                            <h6 className="card-author author"></h6>
+                            <div className="card-text content"></div>
                             </div>
                         </div>
                     </div>

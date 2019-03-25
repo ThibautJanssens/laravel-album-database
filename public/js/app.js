@@ -65294,6 +65294,37 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./public/script/flip.js":
+/*!*******************************!*\
+  !*** ./public/script/flip.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+document.querySelector('#btn-action').addEventListener('click', function () {
+  var card = document.querySelector('.material-card');
+  var icon = document.childNodes[1];
+  icon.classList.add('fa-spin-fast');
+
+  if (card.className('mc-active')) {
+    card.classList.remove('mc-active');
+    setTimeout(function () {
+      icon.classList.remove('fa-arrow-left');
+      icon.classList.remove('fa-spin-fast');
+      icon.classList.add('fa-bars');
+    }, 800);
+  } else {
+    card.classList.add('mc-active');
+    setTimeout(function () {
+      icon.classList.remove('fa-bars');
+      icon.classList.remove('fa-spin-fast');
+      icon.classList.add('fa-arrow-left');
+    }, 800);
+  }
+});
+
+/***/ }),
+
 /***/ "./resources/js/app.js":
 /*!*****************************!*\
   !*** ./resources/js/app.js ***!
@@ -65391,6 +65422,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
+/* harmony import */ var _public_script_flip__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../public/script/flip */ "./public/script/flip.js");
+/* harmony import */ var _public_script_flip__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_public_script_flip__WEBPACK_IMPORTED_MODULE_3__);
+!(function webpackMissingModule() { var e = new Error("Cannot find module 'fs'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -65408,6 +65442,8 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+
 
 
 
@@ -65435,10 +65471,12 @@ function (_Component) {
     value: function componentDidMount() {
       var _this2 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/bands').then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/band').then(function (response) {
         _this2.setState({
           bands: response.data
         });
+
+        console.log(bands);
       });
     }
   }, {
@@ -65446,60 +65484,51 @@ function (_Component) {
     value: function render() {
       var bands = this.state.bands;
       return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("section", {
-        id: "team",
-        class: "pb-5"
+        className: "container"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
         rel: "stylesheet",
         href: "./css/flip.css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
-        href: "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css",
-        rel: "stylesheet",
-        id: "bootstrap-css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
       }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
         src: "//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"
       }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "container"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h5", {
-        class: "section-title h1"
-      }, " All Albums"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "row"
+        className: "row active-with-click"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        className: "col-md-4 col-sm-6 col-xs-12"
       }, bands.map(function (band) {
         return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "col-xs-12 col-sm-6 col-md-4"
+          className: "material-card Red"
+        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, "The Sin And The Sentence"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("strong", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("i", {
+          className: "fa fa-fw fa-star"
+        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Link"], {
+          to: "/albums"
+        }, band.name, " "))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+          className: "mc-content"
         }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "image-flip",
-          ontouchstart: "this.classList.toggle('hover');"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "mainflip"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "frontside"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "card"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "card-body text-center"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h4", {
-          class: "card-title"
-        }, " ", band.name, " "), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", {
-          class: "card-text"
-        }, " This is basic card with image on top, title, description and button. "), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
-          href: "#",
-          class: "btn btn-primary btn-sm"
+          className: "img-container"
+        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
+          className: "img-responsive",
+          src: "http://u.lorenzoferrara.net/marlenesco/material-card/thumb-christopher-walken.jpg"
+        })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+          className: "mc-description"
+        }, "song list")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
+          className: "mc-btn-action",
+          id: "btn-action"
         }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("i", {
-          class: "fa fa-plus"
-        }))))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "backside"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "card"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          class: "card-body text-center mt-4"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h4", {
-          class: "card-title"
-        }, " ", band.name, " "), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", {
-          class: "card-text"
-        }, " This is basic card with image on top, title, description and button.This is basic card with image on top, title, description and button.This is basic card with image on top, title, description and button. ")))))));
-      }))));
+          className: "fa fa-bars"
+        })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+          className: "mc-footer"
+        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h4", null, "Social"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
+          className: "fa fa-fw fa-facebook"
+        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
+          className: "fa fa-fw fa-twitter"
+        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
+          className: "fa fa-fw fa-linkedin"
+        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
+          className: "fa fa-fw fa-google-plus"
+        })));
+      }))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
+        src: _public_script_flip__WEBPACK_IMPORTED_MODULE_3___default.a
+      }));
     }
   }]);
 
@@ -65529,9 +65558,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _BandList__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./BandList */ "./resources/js/components/BandList.js");
 /* harmony import */ var _AlbumList_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./AlbumList.js */ "./resources/js/components/AlbumList.js");
 /* harmony import */ var _SongList__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./SongList */ "./resources/js/components/SongList.js");
-/* harmony import */ var _Contact__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Contact */ "./resources/js/components/Contact.js");
-/* harmony import */ var _Login__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Login */ "./resources/js/components/Login.js");
-/* harmony import */ var _SignUp__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./SignUp */ "./resources/js/components/SignUp.js");
+/* harmony import */ var _Login__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Login */ "./resources/js/components/Login.js");
+/* harmony import */ var _SignUp__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./SignUp */ "./resources/js/components/SignUp.js");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -65549,7 +65577,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
 
 
 
@@ -65594,16 +65621,12 @@ function (_Component) {
         component: _SongList__WEBPACK_IMPORTED_MODULE_7__["default"]
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
         exact: true,
-        path: "/contact",
-        component: _Contact__WEBPACK_IMPORTED_MODULE_8__["default"]
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
-        exact: true,
         path: "/login",
-        component: _Login__WEBPACK_IMPORTED_MODULE_9__["default"]
+        component: _Login__WEBPACK_IMPORTED_MODULE_8__["default"]
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
         exact: true,
         path: "/signup",
-        component: _SignUp__WEBPACK_IMPORTED_MODULE_10__["default"]
+        component: _SignUp__WEBPACK_IMPORTED_MODULE_9__["default"]
       }))));
     }
   }]);
@@ -65673,7 +65696,7 @@ function (_Component) {
     value: function componentDidMount() {
       var _this2 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/bands').then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/band').then(function (response) {
         _this2.setState({
           bands: response.data
         });
@@ -65717,158 +65740,6 @@ function (_Component) {
 
 /***/ }),
 
-/***/ "./resources/js/components/Contact.js":
-/*!********************************************!*\
-  !*** ./resources/js/components/Contact.js ***!
-  \********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-
-
-
-var Contact =
-/*#__PURE__*/
-function (_Component) {
-  _inherits(Contact, _Component);
-
-  function Contact() {
-    _classCallCheck(this, Contact);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(Contact).apply(this, arguments));
-  }
-
-  _createClass(Contact, [{
-    key: "render",
-    value: function render() {
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("section", {
-        class: "section pb-5"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", {
-        class: "section-heading h1 pt-4"
-      }, "Contact us"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", {
-        class: "section-description pb-4"
-      }, "We'd love to hear from you, please drop us a line if you've any query or question."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "row"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "col-lg-5 mb-4"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "card"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "card-body"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "form-header blue accent-1"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-envelope"
-      }), " Write to us:")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "We'll write rarely, but only the best content."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "md-form"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-user prefix grey-text"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        type: "text",
-        id: "form-name",
-        class: "form-control"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
-        for: "form-name"
-      }, "Your name")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "md-form"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-envelope prefix grey-text"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        type: "text",
-        id: "form-email",
-        class: "form-control"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
-        for: "form-email"
-      }, "Your email")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "md-form"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-tag prefix grey-text"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        type: "text",
-        id: "form-Subject",
-        class: "form-control"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
-        for: "form-Subject"
-      }, "Subject")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "md-form"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-pencil-alt prefix grey-text"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("textarea", {
-        type: "text",
-        id: "form-text",
-        class: "form-control md-textarea",
-        rows: "3"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
-        for: "form-text"
-      }, "Your Message")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "text-center mt-4"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-        class: "btn btn-light-blue"
-      }, "Submit"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "col-lg-7"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        id: "map-container-google-11",
-        class: "z-depth-1-half map-container-6",
-        style: "height: 400px"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("iframe", {
-        src: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.813145596989!2d-118.40013994968724!3d34.074301423920495!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c2bc014dedd763%3A0x826175330076842e!2s9346+Civic+Center+Dr%2C+Beverly+Hills%2C+CA+90210%2C+Verenigde+Staten!5e0!3m2!1snl!2sbe!4v1550222331165",
-        frameborder: "0",
-        style: "border:0",
-        allowfullscreen: true
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "row text-center"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "col-md-4"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        class: "btn-floating blue accent-1"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-map-marker-alt"
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Beverly Hills, CA 90210"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "United States")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "col-md-4"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        class: "btn-floating blue accent-1"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-phone"
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "+ 32 269 42 42"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Mon - Fri, 8:00-22:00")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "col-md-4"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        class: "btn-floating blue accent-1"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-        class: "fas fa-envelope"
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "info@dreamStart.com"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "bestCeo@dreamStart.com"))))));
-    }
-  }]);
-
-  return Contact;
-}(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
-
-/* harmony default export */ __webpack_exports__["default"] = (Contact);
-
-/***/ }),
-
 /***/ "./resources/js/components/Header.js":
 /*!*******************************************!*\
   !*** ./resources/js/components/Header.js ***!
@@ -65886,9 +65757,9 @@ __webpack_require__.r(__webpack_exports__);
 
 var Header = function Header() {
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("nav", {
-    class: "navbar navbar-expand-lg navbar-dark bg-dark"
+    className: "navbar navbar-expand-lg navbar-dark bg-dark"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-    class: "navbar-toggler",
+    className: "navbar-toggler",
     type: "button",
     "data-toggle": "collapse",
     "data-target": "#navbarSupportedContent",
@@ -65896,7 +65767,7 @@ var Header = function Header() {
     "aria-expanded": "false",
     "aria-label": "Toggle navigation"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-    class: "navbar-toggler-icon"
+    className: "navbar-toggler-icon"
   })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: "collapse navbar-collapse",
     id: "navbarSupportedContent"
@@ -65905,33 +65776,34 @@ var Header = function Header() {
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    classNameName: "navbar-brand",
+    className: "navbar-brand",
     to: "/"
   }, "Home ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-link",
     to: "/bands"
   }, "Bands ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-link",
     to: "/albums"
   }, "Albums ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-link",
     to: "/songs"
-  }, "Songs ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
+  }, "Songs "))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
+    className: "navbar-nav lg-float-right"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    to: "/contact"
-  }, "Contact Us "))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
-    class: "navbar-nav lg-float-right"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-    class: "nav-item"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-link",
     to: "/login"
   }, "Login ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-    class: "nav-item"
+    className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-link",
     to: "/signup"
   }, "Sign Up")))));
 };
@@ -65988,21 +65860,21 @@ function (_Component) {
     key: "render",
     value: function render() {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "main-content"
+        className: "main-content"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "row m-0 justify-content-center"
+        className: "row m-0 justify-content-center"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "card-container col-lg-6"
+        className: "card-container col-lg-6"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "card card-articles"
+        className: "card card-articles"
       }, "Latest Albums", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "card-body"
+        className: "card-body"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h5", {
-        class: "card-title title"
+        className: "card-title title"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h6", {
-        class: "card-author author"
+        className: "card-author author"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "card-text content"
+        className: "card-text content"
       }))))));
     }
   }]);
