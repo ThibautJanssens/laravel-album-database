@@ -7725,6 +7725,20 @@ function isSlowBuffer (obj) {
 
 /***/ }),
 
+/***/ "./node_modules/isarray/index.js":
+/*!***************************************!*\
+  !*** ./node_modules/isarray/index.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/jquery/dist/jquery.js":
 /*!********************************************!*\
   !*** ./node_modules/jquery/dist/jquery.js ***!
@@ -35314,6 +35328,443 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 
+/***/ "./node_modules/path-to-regexp/index.js":
+/*!**********************************************!*\
+  !*** ./node_modules/path-to-regexp/index.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isarray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js")
+
+/**
+ * Expose `pathToRegexp`.
+ */
+module.exports = pathToRegexp
+module.exports.parse = parse
+module.exports.compile = compile
+module.exports.tokensToFunction = tokensToFunction
+module.exports.tokensToRegExp = tokensToRegExp
+
+/**
+ * The main path matching regexp utility.
+ *
+ * @type {RegExp}
+ */
+var PATH_REGEXP = new RegExp([
+  // Match escaped characters that would otherwise appear in future matches.
+  // This allows the user to escape special characters that won't transform.
+  '(\\\\.)',
+  // Match Express-style parameters and un-named parameters with a prefix
+  // and optional suffixes. Matches appear as:
+  //
+  // "/:test(\\d+)?" => ["/", "test", "\d+", undefined, "?", undefined]
+  // "/route(\\d+)"  => [undefined, undefined, undefined, "\d+", undefined, undefined]
+  // "/*"            => ["/", undefined, undefined, undefined, undefined, "*"]
+  '([\\/.])?(?:(?:\\:(\\w+)(?:\\(((?:\\\\.|[^\\\\()])+)\\))?|\\(((?:\\\\.|[^\\\\()])+)\\))([+*?])?|(\\*))'
+].join('|'), 'g')
+
+/**
+ * Parse a string for the raw tokens.
+ *
+ * @param  {string}  str
+ * @param  {Object=} options
+ * @return {!Array}
+ */
+function parse (str, options) {
+  var tokens = []
+  var key = 0
+  var index = 0
+  var path = ''
+  var defaultDelimiter = options && options.delimiter || '/'
+  var res
+
+  while ((res = PATH_REGEXP.exec(str)) != null) {
+    var m = res[0]
+    var escaped = res[1]
+    var offset = res.index
+    path += str.slice(index, offset)
+    index = offset + m.length
+
+    // Ignore already escaped sequences.
+    if (escaped) {
+      path += escaped[1]
+      continue
+    }
+
+    var next = str[index]
+    var prefix = res[2]
+    var name = res[3]
+    var capture = res[4]
+    var group = res[5]
+    var modifier = res[6]
+    var asterisk = res[7]
+
+    // Push the current path onto the tokens.
+    if (path) {
+      tokens.push(path)
+      path = ''
+    }
+
+    var partial = prefix != null && next != null && next !== prefix
+    var repeat = modifier === '+' || modifier === '*'
+    var optional = modifier === '?' || modifier === '*'
+    var delimiter = res[2] || defaultDelimiter
+    var pattern = capture || group
+
+    tokens.push({
+      name: name || key++,
+      prefix: prefix || '',
+      delimiter: delimiter,
+      optional: optional,
+      repeat: repeat,
+      partial: partial,
+      asterisk: !!asterisk,
+      pattern: pattern ? escapeGroup(pattern) : (asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?')
+    })
+  }
+
+  // Match any characters still remaining.
+  if (index < str.length) {
+    path += str.substr(index)
+  }
+
+  // If the path exists, push it onto the end.
+  if (path) {
+    tokens.push(path)
+  }
+
+  return tokens
+}
+
+/**
+ * Compile a string to a template function for the path.
+ *
+ * @param  {string}             str
+ * @param  {Object=}            options
+ * @return {!function(Object=, Object=)}
+ */
+function compile (str, options) {
+  return tokensToFunction(parse(str, options))
+}
+
+/**
+ * Prettier encoding of URI path segments.
+ *
+ * @param  {string}
+ * @return {string}
+ */
+function encodeURIComponentPretty (str) {
+  return encodeURI(str).replace(/[\/?#]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
+  })
+}
+
+/**
+ * Encode the asterisk parameter. Similar to `pretty`, but allows slashes.
+ *
+ * @param  {string}
+ * @return {string}
+ */
+function encodeAsterisk (str) {
+  return encodeURI(str).replace(/[?#]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
+  })
+}
+
+/**
+ * Expose a method for transforming tokens into the path function.
+ */
+function tokensToFunction (tokens) {
+  // Compile all the tokens into regexps.
+  var matches = new Array(tokens.length)
+
+  // Compile all the patterns before compilation.
+  for (var i = 0; i < tokens.length; i++) {
+    if (typeof tokens[i] === 'object') {
+      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$')
+    }
+  }
+
+  return function (obj, opts) {
+    var path = ''
+    var data = obj || {}
+    var options = opts || {}
+    var encode = options.pretty ? encodeURIComponentPretty : encodeURIComponent
+
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i]
+
+      if (typeof token === 'string') {
+        path += token
+
+        continue
+      }
+
+      var value = data[token.name]
+      var segment
+
+      if (value == null) {
+        if (token.optional) {
+          // Prepend partial segment prefixes.
+          if (token.partial) {
+            path += token.prefix
+          }
+
+          continue
+        } else {
+          throw new TypeError('Expected "' + token.name + '" to be defined')
+        }
+      }
+
+      if (isarray(value)) {
+        if (!token.repeat) {
+          throw new TypeError('Expected "' + token.name + '" to not repeat, but received `' + JSON.stringify(value) + '`')
+        }
+
+        if (value.length === 0) {
+          if (token.optional) {
+            continue
+          } else {
+            throw new TypeError('Expected "' + token.name + '" to not be empty')
+          }
+        }
+
+        for (var j = 0; j < value.length; j++) {
+          segment = encode(value[j])
+
+          if (!matches[i].test(segment)) {
+            throw new TypeError('Expected all "' + token.name + '" to match "' + token.pattern + '", but received `' + JSON.stringify(segment) + '`')
+          }
+
+          path += (j === 0 ? token.prefix : token.delimiter) + segment
+        }
+
+        continue
+      }
+
+      segment = token.asterisk ? encodeAsterisk(value) : encode(value)
+
+      if (!matches[i].test(segment)) {
+        throw new TypeError('Expected "' + token.name + '" to match "' + token.pattern + '", but received "' + segment + '"')
+      }
+
+      path += token.prefix + segment
+    }
+
+    return path
+  }
+}
+
+/**
+ * Escape a regular expression string.
+ *
+ * @param  {string} str
+ * @return {string}
+ */
+function escapeString (str) {
+  return str.replace(/([.+*?=^!:${}()[\]|\/\\])/g, '\\$1')
+}
+
+/**
+ * Escape the capturing group by escaping special characters and meaning.
+ *
+ * @param  {string} group
+ * @return {string}
+ */
+function escapeGroup (group) {
+  return group.replace(/([=!:$\/()])/g, '\\$1')
+}
+
+/**
+ * Attach the keys as a property of the regexp.
+ *
+ * @param  {!RegExp} re
+ * @param  {Array}   keys
+ * @return {!RegExp}
+ */
+function attachKeys (re, keys) {
+  re.keys = keys
+  return re
+}
+
+/**
+ * Get the flags for a regexp from the options.
+ *
+ * @param  {Object} options
+ * @return {string}
+ */
+function flags (options) {
+  return options.sensitive ? '' : 'i'
+}
+
+/**
+ * Pull out keys from a regexp.
+ *
+ * @param  {!RegExp} path
+ * @param  {!Array}  keys
+ * @return {!RegExp}
+ */
+function regexpToRegexp (path, keys) {
+  // Use a negative lookahead to match only capturing groups.
+  var groups = path.source.match(/\((?!\?)/g)
+
+  if (groups) {
+    for (var i = 0; i < groups.length; i++) {
+      keys.push({
+        name: i,
+        prefix: null,
+        delimiter: null,
+        optional: false,
+        repeat: false,
+        partial: false,
+        asterisk: false,
+        pattern: null
+      })
+    }
+  }
+
+  return attachKeys(path, keys)
+}
+
+/**
+ * Transform an array into a regexp.
+ *
+ * @param  {!Array}  path
+ * @param  {Array}   keys
+ * @param  {!Object} options
+ * @return {!RegExp}
+ */
+function arrayToRegexp (path, keys, options) {
+  var parts = []
+
+  for (var i = 0; i < path.length; i++) {
+    parts.push(pathToRegexp(path[i], keys, options).source)
+  }
+
+  var regexp = new RegExp('(?:' + parts.join('|') + ')', flags(options))
+
+  return attachKeys(regexp, keys)
+}
+
+/**
+ * Create a path regexp from string input.
+ *
+ * @param  {string}  path
+ * @param  {!Array}  keys
+ * @param  {!Object} options
+ * @return {!RegExp}
+ */
+function stringToRegexp (path, keys, options) {
+  return tokensToRegExp(parse(path, options), keys, options)
+}
+
+/**
+ * Expose a function for taking tokens and returning a RegExp.
+ *
+ * @param  {!Array}          tokens
+ * @param  {(Array|Object)=} keys
+ * @param  {Object=}         options
+ * @return {!RegExp}
+ */
+function tokensToRegExp (tokens, keys, options) {
+  if (!isarray(keys)) {
+    options = /** @type {!Object} */ (keys || options)
+    keys = []
+  }
+
+  options = options || {}
+
+  var strict = options.strict
+  var end = options.end !== false
+  var route = ''
+
+  // Iterate over the tokens and create our regexp string.
+  for (var i = 0; i < tokens.length; i++) {
+    var token = tokens[i]
+
+    if (typeof token === 'string') {
+      route += escapeString(token)
+    } else {
+      var prefix = escapeString(token.prefix)
+      var capture = '(?:' + token.pattern + ')'
+
+      keys.push(token)
+
+      if (token.repeat) {
+        capture += '(?:' + prefix + capture + ')*'
+      }
+
+      if (token.optional) {
+        if (!token.partial) {
+          capture = '(?:' + prefix + '(' + capture + '))?'
+        } else {
+          capture = prefix + '(' + capture + ')?'
+        }
+      } else {
+        capture = prefix + '(' + capture + ')'
+      }
+
+      route += capture
+    }
+  }
+
+  var delimiter = escapeString(options.delimiter || '/')
+  var endsWithDelimiter = route.slice(-delimiter.length) === delimiter
+
+  // In non-strict mode we allow a slash at the end of match. If the path to
+  // match already ends with a slash, we remove it for consistency. The slash
+  // is valid at the end of a path match, not in the middle. This is important
+  // in non-ending mode, where "/test/" shouldn't match "/test//route".
+  if (!strict) {
+    route = (endsWithDelimiter ? route.slice(0, -delimiter.length) : route) + '(?:' + delimiter + '(?=$))?'
+  }
+
+  if (end) {
+    route += '$'
+  } else {
+    // In non-ending mode, we need the capturing groups to match as much as
+    // possible by using a positive lookahead to the end or next path segment.
+    route += strict && endsWithDelimiter ? '' : '(?=' + delimiter + '|$)'
+  }
+
+  return attachKeys(new RegExp('^' + route, flags(options)), keys)
+}
+
+/**
+ * Normalize the given path string, returning a regular expression.
+ *
+ * An empty array can be passed in for the keys, which will hold the
+ * placeholder key descriptions. For example, using `/user/:id`, `keys` will
+ * contain `[{ name: 'id', delimiter: '/', optional: false, repeat: false }]`.
+ *
+ * @param  {(string|RegExp|Array)} path
+ * @param  {(Array|Object)=}       keys
+ * @param  {Object=}               options
+ * @return {!RegExp}
+ */
+function pathToRegexp (path, keys, options) {
+  if (!isarray(keys)) {
+    options = /** @type {!Object} */ (keys || options)
+    keys = []
+  }
+
+  options = options || {}
+
+  if (path instanceof RegExp) {
+    return regexpToRegexp(path, /** @type {!Array} */ (keys))
+  }
+
+  if (isarray(path)) {
+    return arrayToRegexp(/** @type {!Array} */ (path), /** @type {!Array} */ (keys), options)
+  }
+
+  return stringToRegexp(/** @type {string} */ (path), /** @type {!Array} */ (keys), options)
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/popper.js/dist/esm/popper.js":
 /*!***************************************************!*\
   !*** ./node_modules/popper.js/dist/esm/popper.js ***!
@@ -38879,7 +39330,7 @@ module.exports = ReactPropTypesSecret;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v16.8.4
+/** @license React v16.8.5
  * react-dom.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -46511,14 +46962,25 @@ function createElement(type, props, rootContainerElement, parentNamespace) {
       // See discussion in https://github.com/facebook/react/pull/6896
       // and discussion in https://bugzilla.mozilla.org/show_bug.cgi?id=1276240
       domElement = ownerDocument.createElement(type);
-      // Normally attributes are assigned in `setInitialDOMProperties`, however the `multiple`
-      // attribute on `select`s needs to be added before `option`s are inserted. This prevents
-      // a bug where the `select` does not scroll to the correct option because singular
-      // `select` elements automatically pick the first item.
+      // Normally attributes are assigned in `setInitialDOMProperties`, however the `multiple` and `size`
+      // attributes on `select`s needs to be added before `option`s are inserted.
+      // This prevents:
+      // - a bug where the `select` does not scroll to the correct option because singular
+      //  `select` elements automatically pick the first item #13222
+      // - a bug where the `select` set the first item as selected despite the `size` attribute #14239
       // See https://github.com/facebook/react/issues/13222
-      if (type === 'select' && props.multiple) {
+      // and https://github.com/facebook/react/issues/14239
+      if (type === 'select') {
         var node = domElement;
-        node.multiple = true;
+        if (props.multiple) {
+          node.multiple = true;
+        } else if (props.size) {
+          // Setting a size greater than 1 causes a select to behave like `multiple=true`, where
+          // it is possible that no option is selected.
+          //
+          // This is only necessary when a select in "single selection mode".
+          node.size = props.size;
+        }
       }
     }
   } else {
@@ -51699,7 +52161,7 @@ function warnOnHookMismatchInDev(currentHookName) {
 }
 
 function throwInvalidHookError() {
-  invariant(false, 'Hooks can only be called inside the body of a function component. (https://fb.me/react-invalid-hook-call)');
+  invariant(false, 'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://fb.me/react-invalid-hook-call for tips about how to debug and fix this problem.');
 }
 
 function areHookInputsEqual(nextDeps, prevDeps) {
@@ -56124,11 +56586,11 @@ function commitHookEffectList(unmountTag, mountTag, finishedWork) {
             if (_destroy === null) {
               addendum = ' You returned null. If your effect does not require clean ' + 'up, return undefined (or nothing).';
             } else if (typeof _destroy.then === 'function') {
-              addendum = '\n\nIt looks like you wrote useEffect(async () => ...) or returned a Promise. ' + 'Instead, you may write an async function separately ' + 'and then call it from inside the effect:\n\n' + 'async function fetchComment(commentId) {\n' + '  // You can await here\n' + '}\n\n' + 'useEffect(() => {\n' + '  fetchComment(commentId);\n' + '}, [commentId]);\n\n' + 'In the future, React will provide a more idiomatic solution for data fetching ' + "that doesn't involve writing effects manually.";
+              addendum = '\n\nIt looks like you wrote useEffect(async () => ...) or returned a Promise. ' + 'Instead, write the async function inside your effect ' + 'and call it immediately:\n\n' + 'useEffect(() => {\n' + '  async function fetchData() {\n' + '    // You can await here\n' + '    const response = await MyAPI.getData(someId);\n' + '    // ...\n' + '  }\n' + '  fetchData();\n' + '}, [someId]); // Or [] if effect doesn\'t need props or state\n\n' + 'Learn more about data fetching with Hooks: https://fb.me/react-hooks-data-fetching';
             } else {
               addendum = ' You returned: ' + _destroy;
             }
-            warningWithoutStack$1(false, 'An Effect function must not return anything besides a function, ' + 'which is used for clean-up.%s%s', addendum, getStackByFiberInDevAndProd(finishedWork));
+            warningWithoutStack$1(false, 'An effect function must not return anything besides a function, ' + 'which is used for clean-up.%s%s', addendum, getStackByFiberInDevAndProd(finishedWork));
           }
         }
       }
@@ -59587,7 +60049,7 @@ implementation) {
 
 // TODO: this is special because it gets imported during build.
 
-var ReactVersion = '16.8.4';
+var ReactVersion = '16.8.5';
 
 // TODO: This type is shared between the reconciler and ReactDOM, but will
 // eventually be lifted out to the renderer.
@@ -60168,7 +60630,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v16.8.4
+/** @license React v16.8.5
  * react-is.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -60743,7 +61205,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tiny_warning__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! tiny-warning */ "./node_modules/tiny-warning/dist/tiny-warning.esm.js");
 /* harmony import */ var history__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! history */ "./node_modules/history/esm/history.js");
 /* harmony import */ var tiny_invariant__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! tiny-invariant */ "./node_modules/tiny-invariant/dist/tiny-invariant.esm.js");
-/* harmony import */ var path_to_regexp__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! path-to-regexp */ "./node_modules/react-router/node_modules/path-to-regexp/index.js");
+/* harmony import */ var path_to_regexp__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! path-to-regexp */ "./node_modules/path-to-regexp/index.js");
 /* harmony import */ var path_to_regexp__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(path_to_regexp__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_helpers_esm_extends__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @babel/runtime/helpers/esm/extends */ "./node_modules/@babel/runtime/helpers/esm/extends.js");
 /* harmony import */ var react_is__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-is */ "./node_modules/react-is/index.js");
@@ -61475,457 +61937,6 @@ if (true) {
 
 /***/ }),
 
-/***/ "./node_modules/react-router/node_modules/isarray/index.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/react-router/node_modules/isarray/index.js ***!
-  \*****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = Array.isArray || function (arr) {
-  return Object.prototype.toString.call(arr) == '[object Array]';
-};
-
-
-/***/ }),
-
-/***/ "./node_modules/react-router/node_modules/path-to-regexp/index.js":
-/*!************************************************************************!*\
-  !*** ./node_modules/react-router/node_modules/path-to-regexp/index.js ***!
-  \************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isarray = __webpack_require__(/*! isarray */ "./node_modules/react-router/node_modules/isarray/index.js")
-
-/**
- * Expose `pathToRegexp`.
- */
-module.exports = pathToRegexp
-module.exports.parse = parse
-module.exports.compile = compile
-module.exports.tokensToFunction = tokensToFunction
-module.exports.tokensToRegExp = tokensToRegExp
-
-/**
- * The main path matching regexp utility.
- *
- * @type {RegExp}
- */
-var PATH_REGEXP = new RegExp([
-  // Match escaped characters that would otherwise appear in future matches.
-  // This allows the user to escape special characters that won't transform.
-  '(\\\\.)',
-  // Match Express-style parameters and un-named parameters with a prefix
-  // and optional suffixes. Matches appear as:
-  //
-  // "/:test(\\d+)?" => ["/", "test", "\d+", undefined, "?", undefined]
-  // "/route(\\d+)"  => [undefined, undefined, undefined, "\d+", undefined, undefined]
-  // "/*"            => ["/", undefined, undefined, undefined, undefined, "*"]
-  '([\\/.])?(?:(?:\\:(\\w+)(?:\\(((?:\\\\.|[^\\\\()])+)\\))?|\\(((?:\\\\.|[^\\\\()])+)\\))([+*?])?|(\\*))'
-].join('|'), 'g')
-
-/**
- * Parse a string for the raw tokens.
- *
- * @param  {string}  str
- * @param  {Object=} options
- * @return {!Array}
- */
-function parse (str, options) {
-  var tokens = []
-  var key = 0
-  var index = 0
-  var path = ''
-  var defaultDelimiter = options && options.delimiter || '/'
-  var res
-
-  while ((res = PATH_REGEXP.exec(str)) != null) {
-    var m = res[0]
-    var escaped = res[1]
-    var offset = res.index
-    path += str.slice(index, offset)
-    index = offset + m.length
-
-    // Ignore already escaped sequences.
-    if (escaped) {
-      path += escaped[1]
-      continue
-    }
-
-    var next = str[index]
-    var prefix = res[2]
-    var name = res[3]
-    var capture = res[4]
-    var group = res[5]
-    var modifier = res[6]
-    var asterisk = res[7]
-
-    // Push the current path onto the tokens.
-    if (path) {
-      tokens.push(path)
-      path = ''
-    }
-
-    var partial = prefix != null && next != null && next !== prefix
-    var repeat = modifier === '+' || modifier === '*'
-    var optional = modifier === '?' || modifier === '*'
-    var delimiter = res[2] || defaultDelimiter
-    var pattern = capture || group
-
-    tokens.push({
-      name: name || key++,
-      prefix: prefix || '',
-      delimiter: delimiter,
-      optional: optional,
-      repeat: repeat,
-      partial: partial,
-      asterisk: !!asterisk,
-      pattern: pattern ? escapeGroup(pattern) : (asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?')
-    })
-  }
-
-  // Match any characters still remaining.
-  if (index < str.length) {
-    path += str.substr(index)
-  }
-
-  // If the path exists, push it onto the end.
-  if (path) {
-    tokens.push(path)
-  }
-
-  return tokens
-}
-
-/**
- * Compile a string to a template function for the path.
- *
- * @param  {string}             str
- * @param  {Object=}            options
- * @return {!function(Object=, Object=)}
- */
-function compile (str, options) {
-  return tokensToFunction(parse(str, options))
-}
-
-/**
- * Prettier encoding of URI path segments.
- *
- * @param  {string}
- * @return {string}
- */
-function encodeURIComponentPretty (str) {
-  return encodeURI(str).replace(/[\/?#]/g, function (c) {
-    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
-  })
-}
-
-/**
- * Encode the asterisk parameter. Similar to `pretty`, but allows slashes.
- *
- * @param  {string}
- * @return {string}
- */
-function encodeAsterisk (str) {
-  return encodeURI(str).replace(/[?#]/g, function (c) {
-    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
-  })
-}
-
-/**
- * Expose a method for transforming tokens into the path function.
- */
-function tokensToFunction (tokens) {
-  // Compile all the tokens into regexps.
-  var matches = new Array(tokens.length)
-
-  // Compile all the patterns before compilation.
-  for (var i = 0; i < tokens.length; i++) {
-    if (typeof tokens[i] === 'object') {
-      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$')
-    }
-  }
-
-  return function (obj, opts) {
-    var path = ''
-    var data = obj || {}
-    var options = opts || {}
-    var encode = options.pretty ? encodeURIComponentPretty : encodeURIComponent
-
-    for (var i = 0; i < tokens.length; i++) {
-      var token = tokens[i]
-
-      if (typeof token === 'string') {
-        path += token
-
-        continue
-      }
-
-      var value = data[token.name]
-      var segment
-
-      if (value == null) {
-        if (token.optional) {
-          // Prepend partial segment prefixes.
-          if (token.partial) {
-            path += token.prefix
-          }
-
-          continue
-        } else {
-          throw new TypeError('Expected "' + token.name + '" to be defined')
-        }
-      }
-
-      if (isarray(value)) {
-        if (!token.repeat) {
-          throw new TypeError('Expected "' + token.name + '" to not repeat, but received `' + JSON.stringify(value) + '`')
-        }
-
-        if (value.length === 0) {
-          if (token.optional) {
-            continue
-          } else {
-            throw new TypeError('Expected "' + token.name + '" to not be empty')
-          }
-        }
-
-        for (var j = 0; j < value.length; j++) {
-          segment = encode(value[j])
-
-          if (!matches[i].test(segment)) {
-            throw new TypeError('Expected all "' + token.name + '" to match "' + token.pattern + '", but received `' + JSON.stringify(segment) + '`')
-          }
-
-          path += (j === 0 ? token.prefix : token.delimiter) + segment
-        }
-
-        continue
-      }
-
-      segment = token.asterisk ? encodeAsterisk(value) : encode(value)
-
-      if (!matches[i].test(segment)) {
-        throw new TypeError('Expected "' + token.name + '" to match "' + token.pattern + '", but received "' + segment + '"')
-      }
-
-      path += token.prefix + segment
-    }
-
-    return path
-  }
-}
-
-/**
- * Escape a regular expression string.
- *
- * @param  {string} str
- * @return {string}
- */
-function escapeString (str) {
-  return str.replace(/([.+*?=^!:${}()[\]|\/\\])/g, '\\$1')
-}
-
-/**
- * Escape the capturing group by escaping special characters and meaning.
- *
- * @param  {string} group
- * @return {string}
- */
-function escapeGroup (group) {
-  return group.replace(/([=!:$\/()])/g, '\\$1')
-}
-
-/**
- * Attach the keys as a property of the regexp.
- *
- * @param  {!RegExp} re
- * @param  {Array}   keys
- * @return {!RegExp}
- */
-function attachKeys (re, keys) {
-  re.keys = keys
-  return re
-}
-
-/**
- * Get the flags for a regexp from the options.
- *
- * @param  {Object} options
- * @return {string}
- */
-function flags (options) {
-  return options.sensitive ? '' : 'i'
-}
-
-/**
- * Pull out keys from a regexp.
- *
- * @param  {!RegExp} path
- * @param  {!Array}  keys
- * @return {!RegExp}
- */
-function regexpToRegexp (path, keys) {
-  // Use a negative lookahead to match only capturing groups.
-  var groups = path.source.match(/\((?!\?)/g)
-
-  if (groups) {
-    for (var i = 0; i < groups.length; i++) {
-      keys.push({
-        name: i,
-        prefix: null,
-        delimiter: null,
-        optional: false,
-        repeat: false,
-        partial: false,
-        asterisk: false,
-        pattern: null
-      })
-    }
-  }
-
-  return attachKeys(path, keys)
-}
-
-/**
- * Transform an array into a regexp.
- *
- * @param  {!Array}  path
- * @param  {Array}   keys
- * @param  {!Object} options
- * @return {!RegExp}
- */
-function arrayToRegexp (path, keys, options) {
-  var parts = []
-
-  for (var i = 0; i < path.length; i++) {
-    parts.push(pathToRegexp(path[i], keys, options).source)
-  }
-
-  var regexp = new RegExp('(?:' + parts.join('|') + ')', flags(options))
-
-  return attachKeys(regexp, keys)
-}
-
-/**
- * Create a path regexp from string input.
- *
- * @param  {string}  path
- * @param  {!Array}  keys
- * @param  {!Object} options
- * @return {!RegExp}
- */
-function stringToRegexp (path, keys, options) {
-  return tokensToRegExp(parse(path, options), keys, options)
-}
-
-/**
- * Expose a function for taking tokens and returning a RegExp.
- *
- * @param  {!Array}          tokens
- * @param  {(Array|Object)=} keys
- * @param  {Object=}         options
- * @return {!RegExp}
- */
-function tokensToRegExp (tokens, keys, options) {
-  if (!isarray(keys)) {
-    options = /** @type {!Object} */ (keys || options)
-    keys = []
-  }
-
-  options = options || {}
-
-  var strict = options.strict
-  var end = options.end !== false
-  var route = ''
-
-  // Iterate over the tokens and create our regexp string.
-  for (var i = 0; i < tokens.length; i++) {
-    var token = tokens[i]
-
-    if (typeof token === 'string') {
-      route += escapeString(token)
-    } else {
-      var prefix = escapeString(token.prefix)
-      var capture = '(?:' + token.pattern + ')'
-
-      keys.push(token)
-
-      if (token.repeat) {
-        capture += '(?:' + prefix + capture + ')*'
-      }
-
-      if (token.optional) {
-        if (!token.partial) {
-          capture = '(?:' + prefix + '(' + capture + '))?'
-        } else {
-          capture = prefix + '(' + capture + ')?'
-        }
-      } else {
-        capture = prefix + '(' + capture + ')'
-      }
-
-      route += capture
-    }
-  }
-
-  var delimiter = escapeString(options.delimiter || '/')
-  var endsWithDelimiter = route.slice(-delimiter.length) === delimiter
-
-  // In non-strict mode we allow a slash at the end of match. If the path to
-  // match already ends with a slash, we remove it for consistency. The slash
-  // is valid at the end of a path match, not in the middle. This is important
-  // in non-ending mode, where "/test/" shouldn't match "/test//route".
-  if (!strict) {
-    route = (endsWithDelimiter ? route.slice(0, -delimiter.length) : route) + '(?:' + delimiter + '(?=$))?'
-  }
-
-  if (end) {
-    route += '$'
-  } else {
-    // In non-ending mode, we need the capturing groups to match as much as
-    // possible by using a positive lookahead to the end or next path segment.
-    route += strict && endsWithDelimiter ? '' : '(?=' + delimiter + '|$)'
-  }
-
-  return attachKeys(new RegExp('^' + route, flags(options)), keys)
-}
-
-/**
- * Normalize the given path string, returning a regular expression.
- *
- * An empty array can be passed in for the keys, which will hold the
- * placeholder key descriptions. For example, using `/user/:id`, `keys` will
- * contain `[{ name: 'id', delimiter: '/', optional: false, repeat: false }]`.
- *
- * @param  {(string|RegExp|Array)} path
- * @param  {(Array|Object)=}       keys
- * @param  {Object=}               options
- * @return {!RegExp}
- */
-function pathToRegexp (path, keys, options) {
-  if (!isarray(keys)) {
-    options = /** @type {!Object} */ (keys || options)
-    keys = []
-  }
-
-  options = options || {}
-
-  if (path instanceof RegExp) {
-    return regexpToRegexp(path, /** @type {!Array} */ (keys))
-  }
-
-  if (isarray(path)) {
-    return arrayToRegexp(/** @type {!Array} */ (path), /** @type {!Array} */ (keys), options)
-  }
-
-  return stringToRegexp(/** @type {string} */ (path), /** @type {!Array} */ (keys), options)
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/react/cjs/react.development.js":
 /*!*****************************************************!*\
   !*** ./node_modules/react/cjs/react.development.js ***!
@@ -61934,7 +61945,7 @@ function pathToRegexp (path, keys, options) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v16.8.4
+/** @license React v16.8.5
  * react.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -61956,7 +61967,7 @@ var checkPropTypes = __webpack_require__(/*! prop-types/checkPropTypes */ "./nod
 
 // TODO: this is special because it gets imported during build.
 
-var ReactVersion = '16.8.4';
+var ReactVersion = '16.8.5';
 
 // The Symbol used to tag the ReactElement-like types. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
@@ -63369,7 +63380,7 @@ function memo(type, compare) {
 
 function resolveDispatcher() {
   var dispatcher = ReactCurrentDispatcher.current;
-  !(dispatcher !== null) ? invariant(false, 'Hooks can only be called inside the body of a function component. (https://fb.me/react-invalid-hook-call)') : void 0;
+  !(dispatcher !== null) ? invariant(false, 'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://fb.me/react-invalid-hook-call for tips about how to debug and fix this problem.') : void 0;
   return dispatcher;
 }
 
@@ -63946,7 +63957,7 @@ function resolvePathname(to) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v0.13.4
+/** @license React v0.13.5
  * scheduler-tracing.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -64381,7 +64392,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {/** @license React v0.13.4
+/* WEBPACK VAR INJECTION */(function(global) {/** @license React v0.13.5
  * scheduler.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -65294,37 +65305,6 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./public/script/flip.js":
-/*!*******************************!*\
-  !*** ./public/script/flip.js ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-document.querySelector('#btn-action').addEventListener('click', function () {
-  var card = document.querySelector('.material-card');
-  var icon = document.childNodes[1];
-  icon.classList.add('fa-spin-fast');
-
-  if (card.className('mc-active')) {
-    card.classList.remove('mc-active');
-    setTimeout(function () {
-      icon.classList.remove('fa-arrow-left');
-      icon.classList.remove('fa-spin-fast');
-      icon.classList.add('fa-bars');
-    }, 800);
-  } else {
-    card.classList.add('mc-active');
-    setTimeout(function () {
-      icon.classList.remove('fa-bars');
-      icon.classList.remove('fa-spin-fast');
-      icon.classList.add('fa-arrow-left');
-    }, 800);
-  }
-});
-
-/***/ }),
-
 /***/ "./resources/js/app.js":
 /*!*****************************!*\
   !*** ./resources/js/app.js ***!
@@ -65343,7 +65323,6 @@ __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
-// require('./components/Example');
 
 
 __webpack_require__(/*! ./components/App */ "./resources/js/components/App.js");
@@ -65408,134 +65387,25 @@ if (token) {
 
 /***/ }),
 
-/***/ "./resources/js/components/AlbumList.js":
-/*!**********************************************!*\
-  !*** ./resources/js/components/AlbumList.js ***!
-  \**********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-/* harmony import */ var _public_script_flip__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../public/script/flip */ "./public/script/flip.js");
-/* harmony import */ var _public_script_flip__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_public_script_flip__WEBPACK_IMPORTED_MODULE_3__);
-!(function webpackMissingModule() { var e = new Error("Cannot find module 'fs'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+/***/ "./resources/js/components/Album.js":
+/*!******************************************!*\
+  !*** ./resources/js/components/Album.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
 
 
 
+/***/ }),
+
+/***/ "./resources/js/components/Albums.js":
+/*!*******************************************!*\
+  !*** ./resources/js/components/Albums.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
 
 
-
-
-var AlbumList =
-/*#__PURE__*/
-function (_Component) {
-  _inherits(AlbumList, _Component);
-
-  function AlbumList() {
-    var _this;
-
-    _classCallCheck(this, AlbumList);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(AlbumList).call(this));
-    _this.state = {
-      bands: []
-    };
-    return _this;
-  }
-
-  _createClass(AlbumList, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this2 = this;
-
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/band').then(function (response) {
-        _this2.setState({
-          bands: response.data
-        });
-
-        console.log(bands);
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var bands = this.state.bands;
-      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("section", {
-        className: "container"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
-        rel: "stylesheet",
-        href: "./css/flip.css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "row active-with-click"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "col-md-4 col-sm-6 col-xs-12"
-      }, bands.map(function (band) {
-        return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          className: "material-card Red"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, "The Sin And The Sentence"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("strong", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("i", {
-          className: "fa fa-fw fa-star"
-        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-          to: "/albums"
-        }, band.name, " "))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          className: "mc-content"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          className: "img-container"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-          className: "img-responsive",
-          src: "http://u.lorenzoferrara.net/marlenesco/material-card/thumb-christopher-walken.jpg"
-        })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          className: "mc-description"
-        }, "song list")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
-          className: "mc-btn-action",
-          id: "btn-action"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("i", {
-          className: "fa fa-bars"
-        })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          className: "mc-footer"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h4", null, "Social"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
-          className: "fa fa-fw fa-facebook"
-        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
-          className: "fa fa-fw fa-twitter"
-        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
-          className: "fa fa-fw fa-linkedin"
-        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
-          className: "fa fa-fw fa-google-plus"
-        })));
-      }))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: _public_script_flip__WEBPACK_IMPORTED_MODULE_3___default.a
-      }));
-    }
-  }]);
-
-  return AlbumList;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]);
-
-/* harmony default export */ __webpack_exports__["default"] = (AlbumList);
 
 /***/ }),
 
@@ -65555,9 +65425,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
 /* harmony import */ var _Header__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Header */ "./resources/js/components/Header.js");
 /* harmony import */ var _Home__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Home */ "./resources/js/components/Home.js");
-/* harmony import */ var _BandList__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./BandList */ "./resources/js/components/BandList.js");
-/* harmony import */ var _AlbumList_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./AlbumList.js */ "./resources/js/components/AlbumList.js");
-/* harmony import */ var _SongList__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./SongList */ "./resources/js/components/SongList.js");
+/* harmony import */ var _newAlbum__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./newAlbum */ "./resources/js/components/newAlbum.js");
+/* harmony import */ var _newAlbum__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_newAlbum__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _Albums__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Albums */ "./resources/js/components/Albums.js");
+/* harmony import */ var _Albums__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_Albums__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _Album__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Album */ "./resources/js/components/Album.js");
+/* harmony import */ var _Album__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_Album__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _Login__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Login */ "./resources/js/components/Login.js");
 /* harmony import */ var _SignUp__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./SignUp */ "./resources/js/components/SignUp.js");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -65585,6 +65458,9 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
+ // import BandList from './BandList';
+// import SongList from './SongList';
+// import Contact from './Contact';
 
 
 
@@ -65609,16 +65485,16 @@ function (_Component) {
         component: _Home__WEBPACK_IMPORTED_MODULE_4__["default"]
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
         exact: true,
-        path: "/bands",
-        component: _BandList__WEBPACK_IMPORTED_MODULE_5__["default"]
+        path: "/newAlbum",
+        component: _newAlbum__WEBPACK_IMPORTED_MODULE_5___default.a
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
         exact: true,
         path: "/albums",
-        component: _AlbumList_js__WEBPACK_IMPORTED_MODULE_6__["default"]
+        component: _Albums__WEBPACK_IMPORTED_MODULE_6___default.a
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
         exact: true,
-        path: "/songs",
-        component: _SongList__WEBPACK_IMPORTED_MODULE_7__["default"]
+        path: "/album/{id}",
+        component: _Album__WEBPACK_IMPORTED_MODULE_7___default.a
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
         exact: true,
         path: "/login",
@@ -65635,108 +65511,6 @@ function (_Component) {
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
 
 react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render(react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(App, null), document.getElementById('app'));
-
-/***/ }),
-
-/***/ "./resources/js/components/BandList.js":
-/*!*********************************************!*\
-  !*** ./resources/js/components/BandList.js ***!
-  \*********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-
-
-
-
-var BandList =
-/*#__PURE__*/
-function (_Component) {
-  _inherits(BandList, _Component);
-
-  function BandList() {
-    var _this;
-
-    _classCallCheck(this, BandList);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(BandList).call(this));
-    _this.state = {
-      bands: []
-    };
-    return _this;
-  }
-
-  _createClass(BandList, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this2 = this;
-
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/band').then(function (response) {
-        _this2.setState({
-          bands: response.data
-        });
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var bands = this.state.bands;
-      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "container py-4"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "row justify-content-center"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "col-md-8"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "card"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "card-header"
-      }, "All Bands"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "card-body"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-        className: "btn btn-primary btn-sm mb-3",
-        to: "/create"
-      }, "Add new band"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("ul", {
-        className: "list-group list-group-flush"
-      }, bands.map(function (band) {
-        return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-          className: "list-group-item list-group-item-action d-flex justify-content-between align-items-center",
-          to: "/band/".concat(band.id),
-          key: band.id
-        }, band.name);
-      })))))));
-    }
-  }]);
-
-  return BandList;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]);
-
-/* harmony default export */ __webpack_exports__["default"] = (BandList);
 
 /***/ }),
 
@@ -65773,37 +65547,26 @@ var Header = function Header() {
     id: "navbarSupportedContent"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
     className: "navbar-nav mr-auto"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-    className: "nav-item"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
     className: "navbar-brand",
     to: "/"
-  }, "Home ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-    className: "nav-item"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    className: "nav-link",
-    to: "/bands"
-  }, "Bands ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-    className: "nav-item"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    className: "nav-link",
-    to: "/albums"
-  }, "Albums ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-    className: "nav-item"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    className: "nav-link",
-    to: "/songs"
-  }, "Songs "))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
+  }, "Home ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-item",
+    to: "/newAlbum"
+  }, "Create Album")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
+    className: "nav-item",
+    to: "/Albums"
+  }, "All Albums"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
     className: "navbar-nav lg-float-right"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    className: "nav-link",
+    className: "nav-item",
     to: "/login"
   }, "Login ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
     className: "nav-item"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
-    className: "nav-link",
+    className: "nav-item",
     to: "/signup"
   }, "Sign Up")))));
 };
@@ -65824,6 +65587,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -65845,20 +65610,39 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
+
 var Home =
 /*#__PURE__*/
 function (_Component) {
   _inherits(Home, _Component);
 
   function Home() {
+    var _this;
+
     _classCallCheck(this, Home);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(Home).apply(this, arguments));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Home).call(this));
+    _this.state = {
+      albums: []
+    };
+    return _this;
   }
 
   _createClass(Home, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      axios.get('/api/albums').then(function (response) {
+        _this2.setState({
+          albums: response.data
+        });
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
+      var albums = this.state.albums;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "main-content"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -65867,15 +65651,17 @@ function (_Component) {
         className: "card-container col-lg-6"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "card card-articles"
-      }, "Latest Albums", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "card-body"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h5", {
-        className: "card-title title"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h6", {
-        className: "card-author author"
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "card-text content"
-      }))))));
+      }, "Albums", albums.map(function (album) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "card-body"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h5", {
+          className: "card-title title"
+        }, album.nom_album), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h6", {
+          className: "card-author author"
+        }, album.nom_artiste), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "card-text content"
+        }, album.songs));
+      })))));
     }
   }]);
 
@@ -65922,6 +65708,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
+
 var Login =
 /*#__PURE__*/
 function (_Component) {
@@ -65934,116 +65721,59 @@ function (_Component) {
   }
 
   _createClass(Login, [{
+    key: "handleLogin",
+    value: function handleLogin(e) {
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/api/login');
+    }
+  }, {
     key: "render",
     value: function render() {
-      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("section", {
-        class: "login-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
-        href: "//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css",
-        rel: "stylesheet",
-        id: "bootstrap-css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
-        href: "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css",
-        rel: "stylesheet",
-        id: "bootstrap-css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//code.jquery.com/jquery-1.11.1.min.js"
+      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "container-fluid"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "row no-gutter"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "d-none d-md-flex col-md-4 col-lg-6 bg-image"
       }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "col-md-8 col-lg-6"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "login d-flex align-items-center py-5"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         class: "container"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         class: "row"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "col-md-4 login-sec"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", {
-        class: "text-center"
-      }, "Login Now"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("form", {
-        class: "login-form"
+        class: "col-md-9 col-lg-8 mx-auto"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", {
+        class: "login-heading mb-4"
+      }, "Welcome back!"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("form", {
+        onSubmit: handleLogin,
+        method: "post"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputEmail1",
-        class: "text-uppercase"
-      }, "Username"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "text",
-        class: "form-control",
-        placeholder: ""
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputPassword1",
-        class: "text-uppercase"
-      }, "Password"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "password",
-        class: "form-control",
-        placeholder: ""
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-check"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        class: "form-check-label"
+        class: "form-label-group"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "checkbox",
-        class: "form-check-input"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("small", null, "Remember Me")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("button", {
-        type: "submit",
-        class: "btn btn-login float-right"
-      }, "Submit")))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "col-md-8 banner-sec"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        id: "carouselExampleIndicators",
-        class: "carousel slide",
-        "data-ride": "carousel"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("ol", {
-        class: "carousel-indicators"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
-        "data-target": "#carouselExampleIndicators",
-        "data-slide-to": "0",
-        class: "active"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
-        "data-target": "#carouselExampleIndicators",
-        "data-slide-to": "1"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
-        "data-target": "#carouselExampleIndicators",
-        "data-slide-to": "2"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-inner",
-        role: "listbox"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-item active"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-        class: "d-block img-fluid",
-        src: "https://static.pexels.com/photos/33972/pexels-photo.jpg",
-        alt: "First slide"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-caption d-none d-md-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "banner-text"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "This is Heaven"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation")))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-item"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-        class: "d-block img-fluid",
-        src: "https://images.pexels.com/photos/7097/people-coffee-tea-meeting.jpg",
-        alt: "First slide"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-caption d-none d-md-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "banner-text"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "This is Heaven"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation")))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-item"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-        class: "d-block img-fluid",
-        src: "https://images.pexels.com/photos/872957/pexels-photo-872957.jpeg",
-        alt: "First slide"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-caption d-none d-md-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "banner-text"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "This is Heaven"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation"))))))))));
+        type: "email",
+        id: "inputEmail",
+        class: "form-control",
+        placeholder: "Email address",
+        required: true,
+        autofocus: true
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+        for: "inputEmail"
+      }, "Email address")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-label-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        type: "password",
+        id: "inputPassword",
+        class: "form-control",
+        placeholder: "Password",
+        required: true
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+        for: "inputPassword"
+      }, "Password")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("button", {
+        class: "btn btn-lg btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2",
+        type: "submit"
+      }, "Sign in"))))))))));
     }
   }]);
 
@@ -66104,141 +65834,7 @@ function (_Component) {
   _createClass(SignUp, [{
     key: "render",
     value: function render() {
-      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("section", {
-        class: "login-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
-        href: "//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css",
-        rel: "stylesheet",
-        id: "bootstrap-css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
-        href: "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css",
-        rel: "stylesheet",
-        id: "bootstrap-css"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("script", {
-        src: "//code.jquery.com/jquery-1.11.1.min.js"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "container"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "row"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "col-md-4 login-sec"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", {
-        class: "text-center"
-      }, "Join our community"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("form", {
-        class: "login-form"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputEmail1",
-        class: "text-uppercase"
-      }, "First Name"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "text",
-        class: "form-control",
-        placeholder: "First Name"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputEmail1",
-        class: "text-uppercase"
-      }, "Last Name"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "text",
-        class: "form-control",
-        placeholder: "Last Name"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputEmail1",
-        class: "text-uppercase"
-      }, "Username"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "text",
-        class: "form-control",
-        placeholder: "Username"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputEmail1",
-        class: "text-uppercase"
-      }, "Email"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "email",
-        class: "form-control",
-        placeholder: "Email"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        for: "exampleInputPassword1",
-        class: "text-uppercase"
-      }, "Password"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "password",
-        class: "form-control",
-        placeholder: "Password"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "form-check"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
-        class: "form-check-label"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
-        type: "checkbox",
-        class: "form-check-input"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("small", null, "Remember Me")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("button", {
-        type: "submit",
-        class: "btn btn-login float-right"
-      }, "Submit")))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "col-md-8 banner-sec"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        id: "carouselExampleIndicators",
-        class: "carousel slide",
-        "data-ride": "carousel"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("ol", {
-        class: "carousel-indicators"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
-        "data-target": "#carouselExampleIndicators",
-        "data-slide-to": "0",
-        class: "active"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
-        "data-target": "#carouselExampleIndicators",
-        "data-slide-to": "1"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
-        "data-target": "#carouselExampleIndicators",
-        "data-slide-to": "2"
-      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-inner",
-        role: "listbox"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-item active"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-        class: "d-block img-fluid",
-        src: "https://static.pexels.com/photos/33972/pexels-photo.jpg",
-        alt: "First slide"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-caption d-none d-md-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "banner-text"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "This is Heaven"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation")))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-item"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-        class: "d-block img-fluid",
-        src: "https://images.pexels.com/photos/7097/people-coffee-tea-meeting.jpg",
-        alt: "First slide"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-caption d-none d-md-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "banner-text"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "This is Heaven"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation")))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-item"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
-        class: "d-block img-fluid",
-        src: "https://images.pexels.com/photos/872957/pexels-photo-872957.jpeg",
-        alt: "First slide"
-      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "carousel-caption d-none d-md-block"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        class: "banner-text"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "This is Heaven"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation"))))))))));
+      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "wow"));
     }
   }]);
 
@@ -66249,105 +65845,14 @@ function (_Component) {
 
 /***/ }),
 
-/***/ "./resources/js/components/SongList.js":
+/***/ "./resources/js/components/newAlbum.js":
 /*!*********************************************!*\
-  !*** ./resources/js/components/SongList.js ***!
+  !*** ./resources/js/components/newAlbum.js ***!
   \*********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+/*! no static exports found */
+/***/ (function(module, exports) {
 
 
-
-
-
-var SongList =
-/*#__PURE__*/
-function (_Component) {
-  _inherits(SongList, _Component);
-
-  function SongList() {
-    var _this;
-
-    _classCallCheck(this, SongList);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(SongList).call(this));
-    _this.state = {
-      bands: []
-    };
-    return _this;
-  }
-
-  _createClass(SongList, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this2 = this;
-
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/api/bands').then(function (response) {
-        _this2.setState({
-          bands: response.data
-        });
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var bands = this.state.bands;
-      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "container py-4"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "row justify-content-center"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "col-md-8"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "card"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "card-header"
-      }, "All Bands"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-        className: "card-body"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-        className: "btn btn-primary btn-sm mb-3",
-        to: "/create"
-      }, "Add new band"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("ul", {
-        className: "list-group list-group-flush"
-      }, bands.map(function (band) {
-        return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-          className: "list-group-item list-group-item-action d-flex justify-content-between align-items-center",
-          to: "/band/".concat(band.id),
-          key: band.id
-        }, band.name);
-      })))))));
-    }
-  }]);
-
-  return SongList;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]);
-
-/* harmony default export */ __webpack_exports__["default"] = (SongList);
 
 /***/ }),
 

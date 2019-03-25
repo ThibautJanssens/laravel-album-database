@@ -2,56 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Album;
 use Illuminate\Http\Request;
 
 class AlbumController extends Controller
 {
-    public function create(Request $request)
+    public function index()
     {
-        $album = new Album;
-        $album->img = $request->img;
-        $album->band = $request->artist;
-        $album->title = $request->title;
-        $album->genre = $request->genre;
-        $album->year = $request->year;
-        $album->label = $request->label;
-        $album->note = $request->note;
-        $id = $album->save();
-        return $id ? "Created album successfully" : 'There was a problem trying to insert into the database';
+        $Albums = Album::all();
+
+        return response()->json($Albums);
     }
 
-    // public function read(Request $request){
-    //     if ($request->has('id')) {
-    //         $result = Album::find($request->input('id'));
-    //         return $result ? $result : 'No such album.';
-    //     } elseif ($request->has('queryString')) {
-    //         $result = Album::where(
-    //             'artist', 'ILIKE', '%'.$request->input('queryString').'%')->orWhere(
-    //             'name', 'ILIKE', '%'.$request->input('queryString').'%')->orWhere(
-    //             'label', 'ILIKE', '%'.$request->input('queryString').'%')->orWhere(
-    //             'genre', 'ILIKE', '%'.$request->input('queryString').'%')->orWhere(
-    //             'songs', 'ILIKE', '%'.$request->input('queryString').'%')->get();
-    //         return count($result) > 0 ? $result : 'No such album.';
-    //     }
-    //     return Album::inRandomOrder()->first();
-    // }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'pochette' => 'required',
+            'nom_artiste' => 'required',
+            'nom_album' => 'required',
+            'genre' => 'required',
+            'prodyear' => 'required',
+            'label' => 'required',
+            'songs' => 'required',
+            'note' => 'required'
+        ]);
 
-    public function update(Request $request){
-        $album = Album::find($request->id);
-        $album->img = $request->img;
-        $album->band = $request->artist;
-        $album->title = $request->title;
-        $album->genre = $request->genre;
-        $album->year = $request->year;
-        $album->label = $request->label;
-        $album->note = $request->note;
-        $id = $album->save();
-        return $id ? "Updated album successfully" : 'There was a problem trying to update the album';
+        $Album = Album::create($request->all());
+
+        return response()->json([
+            'message' => 'Great success! New Album created',
+            'Album' => $Album
+        ]);
     }
 
-    public function delete(Request $request){
-        $album = Album::find($request->id);
-        $status = $album->delete();
-        return $status ? "Deleted album successfully" : 'There was a problem trying to delete the album';
+    public function show(Album $Album)
+    {
+        return $Album;
+    }
+
+    public function update(Request $request, Album $Album)
+    {
+        $request->validate([
+          'pochette' => 'nullable',
+          'nom_artiste' => 'nullable',
+          'nom_album' => 'nullable',
+          'genre' => 'nullable',
+          'prodyear' => 'nullable',
+          'label' => 'nullable',
+          'songs' => 'nullable',
+          'note' => 'nullable'
+        ]);
+
+        $Album->update($request->all());
+
+        return response()->json([
+            'message' => 'Great success! Album updated',
+            'Album' => $Album
+        ]);
+    }
+
+    public function destroy(Album $Album)
+    {
+        $Album->delete();
+
+        return response()->json([
+            'message' => 'Successfully deleted Album!'
+        ]);
     }
 }

@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Album extends Model
 {
     protected $fillable = [
-        'title',
-        'label',
-        'img',
-        'year',
-        'genre',
-        'band',
-        'note',
-        'comment'
-    ];
+      'pochette',
+      'nom_artiste',
+      'nom_album',
+      'genre',
+      'prodyear',
+      'label',
+      'songs',
+      'note'
+  ];
 }

@@ -8,25 +8,34 @@ const Header = () => (
         </button>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav mr-auto">
-                <li className="nav-item">
+                <li>
                     <Link className='navbar-brand' to='/'>Home </Link>
                 </li>
-                <li className="nav-item">
-                    <Link className="nav-link" to='/bands'>Bands </Link>
+                <li>
+                    <Link className='nav-item' to='/newAlbum'>Create Album</Link>
+                </li>
+                <li>
+                    <Link className='nav-item' to='/Albums'>All Albums</Link>
+                </li>
+                {/* <li className="nav-item">
+                    <Link className="nav-item" to='/bands'>Bands </Link>
                 </li>
                 <li className="nav-item">
-                    <Link className="nav-link" to='/albums'>Albums </Link>
+                <Link className="nav-item" to='/albums'>Albums </Link>
                 </li>
                 <li className="nav-item">
-                    <Link className="nav-link" to='/songs'>Songs </Link>
+                <Link className="nav-item" to='/songs'>Songs </Link>
                 </li>
+                <li className="nav-item">
+                <Link className="nav-item" to='/contact'>Contact Us </Link>
+                </li> */}
             </ul>
             <ul className="navbar-nav lg-float-right">
                 <li className="nav-item">
-                    <Link className="nav-link" to='/login'>Login </Link>
+                    <Link className="nav-item" to='/login'>Login </Link>
                 </li>
                 <li className="nav-item">
-                    <Link className="nav-link" to='/signup'>Sign Up</Link>
+                    <Link className="nav-item" to='/signup'>Sign Up</Link>
                 </li>
             </ul>
         </div>

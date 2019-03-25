@@ -12,27 +12,22 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::middleware('auth:api')->get('/albums', 'AlbumController@index')->name('albums.all');
 
-Route::post('logout', 'ApiAuthController@logout');
-Route::post('refresh', 'ApiAuthController@refresh');
-Route::get('user', 'ApiAuthController@user');
+Route::middleware('auth:api')->post('/albums', 'AlbumController@store')->name('albums.store');
 
-Route::post('album', 'AlbumController@create');
-Route::get('album', 'AlbumController@read');
-Route::put('album', 'AlbumController@update');
-Route::delete('album', 'AlbumController@delete');
+Route::middleware('auth:api')->get('/albums/{album}', 'AlbumController@show')->name('albums.show');
 
-Route::post('band', 'BandController@create');
-Route::get('band', 'BandController@index');
-//Route::get('band', 'BandController@read');
-Route::put('band', 'BandController@update');
-Route::delete('band', 'BandController@delete');
+Route::middleware('auth:api')->put('/albums/{album}', 'AlbumController@update')->name('albums.update');
 
-    Route::post('song', 'AlbumController@create');
-    Route::get('song', 'AlbumController@read');
-    Route::put('song', 'AlbumController@update');
-    Route::delete('song', 'SongController@delete');
+Route::middleware('auth:api')->delete('/albums/{album}', 'AlbumController@destroy')->name('albums.destroy');
 
-Route::post('signUp', 'AuthController@signUp');
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
-Route::post('login', 'AuthController@login');
+Route::post('/register', 'AuthController@register');
+
+Route::post('/login', 'AuthController@login');
+
+Route::post('/logout', 'AuthController@logout');

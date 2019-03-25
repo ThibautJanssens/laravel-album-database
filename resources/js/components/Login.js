@@ -1,82 +1,46 @@
 import axios from 'axios'
     import React, { Component } from 'react'
     import { Link } from 'react-router-dom'
+    import Axios from 'axios';
 
     class Login extends Component {
-      render () {
-        return (
-            <section class="login-block">
-                <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
-                <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-                <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-                <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
-                <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-                <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-4 login-sec">
-                            <h2 class="text-center">Login Now</h2>
-                            <form class="login-form">
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1" class="text-uppercase">Username</label>
-                                    <input type="text" class="form-control" placeholder=""/>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputPassword1" class="text-uppercase">Password</label>
-                                    <input type="password" class="form-control" placeholder=""/>
-                                </div>
-                                <div class="form-check">
-                                    <label class="form-check-label">
-                                        <input type="checkbox" class="form-check-input"/>
-                                        <small>Remember Me</small>
-                                    </label>
-                                    <button type="submit" class="btn btn-login float-right">Submit</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="col-md-8 banner-sec">
-                            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-                                <ol class="carousel-indicators">
-                                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-                                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-                                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-                                </ol>
-                                <div class="carousel-inner" role="listbox">
-                                    <div class="carousel-item active">
-                                        <img class="d-block img-fluid" src="https://static.pexels.com/photos/33972/pexels-photo.jpg" alt="First slide"/>
-                                        <div class="carousel-caption d-none d-md-block">
-                                            <div class="banner-text">
-                                                <h2>This is Heaven</h2>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <img class="d-block img-fluid" src="https://images.pexels.com/photos/7097/people-coffee-tea-meeting.jpg" alt="First slide"/>
-                                        <div class="carousel-caption d-none d-md-block">
-                                            <div class="banner-text">
-                                                <h2>This is Heaven</h2>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <img class="d-block img-fluid" src="https://images.pexels.com/photos/872957/pexels-photo-872957.jpeg" alt="First slide"/>
-                                        <div class="carousel-caption d-none d-md-block">
-                                            <div class="banner-text">
-                                                <h2>This is Heaven</h2>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
+        handleLogin(e){
+            Axios.post('/api/login');
+        }
+        render () {
+            return (
+                <React.Fragment>
+                    <div class="container-fluid">
+                        <div class="row no-gutter">
+                            <div class="d-none d-md-flex col-md-4 col-lg-6 bg-image">
+                            </div>
+                                <div class="col-md-8 col-lg-6">
+                                    <div class="login d-flex align-items-center py-5">
+                                        <div class="container">
+                                            <div class="row">
+                                                <div class="col-md-9 col-lg-8 mx-auto">
+                                                    <h3 class="login-heading mb-4">Welcome back!</h3>
+                                                    <form onSubmit={handleLogin} method="post">
+                                                        <div class="form-label-group">
+                                                            <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus/>
+                                                            <label for="inputEmail">Email address</label>
+                                                        </div>
+                                                        <div class="form-label-group">
+                                                            <input type="password" id="inputPassword" class="form-control" placeholder="Password" required/>
+                                                            <label for="inputPassword">Password</label>
+                                                        </div>
+                                                        <button class="btn btn-lg btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" type="submit">Sign in</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-        )
-      }
+                </React.Fragment>
+            )
+        }
     }
 
     export default Login
