@@ -20,40 +20,33 @@
             return (
                 <React.Fragment>
                     <link rel="stylesheet" type="text/css" href="./css/albums.css"></link>
-                    <section id="team" class="pb-5">
-                        <div class="container">
-                            <h5 class="section-title h1">ALBUMS</h5>
-                            <div class="row">
+                    <section id="team" className="pb-5">
+                        <div className="container">
+                            <h5 className="section-title h1">ALBUMS</h5>
+                            <div className="row">
                             { albums.map(album => (
-                                <div class="col-xs-12 col-sm-6 col-md-4">
-                                    <div class="image-flip" ontouchstart="this.classList.toggle('hover');">
-                                        <div class="mainflip">
-                                            <div class="frontside">
-                                                <div class="card">
-                                                    <div class="card-body text-center">
-                                                        <p><img class=" img-fluid" src={album.pochette} alt="card image"/></p>
-                                                        <h4 class="card-title">{album.nom_album}</h4>
-                                                        <p class="card-text">{album.nom_artiste}, {album.prodyear}</p>
-                                                        <a href="#" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i></a>
+                                <div className="col-xs-12 col-sm-6 col-md-4">
+                                    <div className="image-flip" ontouchstart="this.classNameList.toggle('hover');">
+                                        <div className="mainflip">
+                                            <div className="frontside">
+                                                <div className="card">
+                                                    <div className="card-body text-center">
+                                                        <p><img className=" img-fluid" src={album.pochette} alt="card image"/></p>
+                                                        <h4 className="card-title">{album.nom_album}</h4>
+                                                        <p className="card-text">{album.nom_artiste}, {album.prodyear}</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="backside">
-                                                <div class="card">
-                                                    <div class="card-body text-center mt-4">
+                                            <div className="backside">
+                                                <div className="card">
+                                                    <div className="card-body text-center mt-4">
                                                         <Link to={"/album/"+album.id}>
-                                                            <h4 class="card-title">{album.nom_album}</h4>
+                                                            <h4 className="card-title">{album.nom_album}</h4>
                                                         </Link>
-                                                        <p class="card-text">{album.songs}</p>
-                                                        <ul class="list-inline">
-                                                            <li class="list-inline-item">
+                                                        <p className="card-text">{album.songs}</p>
+                                                        <ul className="list-inline">
+                                                            <li className="list-inline-item">
                                                                 <i>{album.genre}</i>
-                                                            </li>
-                                                            <li class="list-inline-item">
-                                                                <strong>{album.label}</strong>
-                                                            </li>
-                                                            <li>
-                                                                Note: {album.note}/5
                                                             </li>
                                                         </ul>
                                                     </div>

@@ -65408,9 +65408,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
@@ -65418,46 +65418,70 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
-var Albums =
+var Album =
 /*#__PURE__*/
 function (_Component) {
-  _inherits(Albums, _Component);
+  _inherits(Album, _Component);
 
-  function Albums(props) {
+  function Album(props) {
     var _this;
 
-    _classCallCheck(this, Albums);
+    _classCallCheck(this, Album);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Albums).call(this, props));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Album).call(this, props));
     _this.state = {
       album: []
     };
+    _this.handleDelete = _this.handleDelete.bind(_assertThisInitialized(_this));
     return _this;
   }
 
-  _createClass(Albums, [{
+  _createClass(Album, [{
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this2 = this;
 
-      axios.get('/api/albums/' + this.props.match.id).then(function (response) {
+      axios.get('/api/albums/' + this.props.match.params.id).then(function (response) {
         _this2.setState({
           album: response.data
         });
       });
     }
   }, {
+    key: "handleDelete",
+    value: function handleDelete(e) {
+      var _this3 = this;
+
+      axios.delete('/api/albums/' + this.props.match.params.id).then(function (response) {
+        _this3.props.history.push('/albums');
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
       var album = this.state.album;
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null);
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "container section"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "row"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "col-md-6"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, album.nom_album), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Artist: ", album.nom_artiste), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Genre: ", album.genre), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Label: ", album.label), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Year of release: ", album.yearprod), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Score: ", album.note, " / 5"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, album.songs)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "col-md-6"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        src: album.pochette,
+        height: "300px",
+        width: "300px"
+      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        onClick: this.handleDelete
+      }, "Delete this album")));
     }
   }]);
 
-  return Albums;
+  return Album;
 }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
 
-/* harmony default export */ __webpack_exports__["default"] = (Albums);
+/* harmony default export */ __webpack_exports__["default"] = (Album);
 
 /***/ }),
 
@@ -65532,59 +65556,52 @@ function (_Component) {
         href: "./css/albums.css"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("section", {
         id: "team",
-        class: "pb-5"
+        className: "pb-5"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "container"
+        className: "container"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h5", {
-        class: "section-title h1"
+        className: "section-title h1"
       }, "ALBUMS"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        class: "row"
+        className: "row"
       }, albums.map(function (album) {
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "col-xs-12 col-sm-6 col-md-4"
+          className: "col-xs-12 col-sm-6 col-md-4"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "image-flip",
-          ontouchstart: "this.classList.toggle('hover');"
+          className: "image-flip",
+          ontouchstart: "this.classNameList.toggle('hover');"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "mainflip"
+          className: "mainflip"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "frontside"
+          className: "frontside"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "card"
+          className: "card"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "card-body text-center"
+          className: "card-body text-center"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
-          class: " img-fluid",
+          className: " img-fluid",
           src: album.pochette,
           alt: "card image"
         })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", {
-          class: "card-title"
+          className: "card-title"
         }, album.nom_album), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", {
-          class: "card-text"
-        }, album.nom_artiste, ", ", album.prodyear), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-          href: "#",
-          class: "btn btn-primary btn-sm"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
-          class: "fa fa-plus"
-        }))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "backside"
+          className: "card-text"
+        }, album.nom_artiste, ", ", album.prodyear)))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "backside"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "card"
+          className: "card"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          class: "card-body text-center mt-4"
+          className: "card-body text-center mt-4"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Link"], {
           to: "/album/" + album.id
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", {
-          class: "card-title"
+          className: "card-title"
         }, album.nom_album)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", {
-          class: "card-text"
+          className: "card-text"
         }, album.songs), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
-          class: "list-inline"
+          className: "list-inline"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-          class: "list-inline-item"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, album.genre)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
-          class: "list-inline-item"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, album.label)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "Note: ", album.note, "/5"))))))));
+          className: "list-inline-item"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, album.genre)))))))));
       })))));
     }
   }]);
@@ -66032,6 +66049,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -66040,9 +66059,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
@@ -66056,16 +66075,181 @@ var newAlbum =
 function (_Component) {
   _inherits(newAlbum, _Component);
 
-  function newAlbum() {
+  function newAlbum(props) {
+    var _this;
+
     _classCallCheck(this, newAlbum);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(newAlbum).apply(this, arguments));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(newAlbum).call(this, props));
+    _this.state = {
+      pochette: '',
+      nom_artiste: '',
+      nom_album: '',
+      genre: '',
+      prodyear: '',
+      label: '',
+      songs: '',
+      note: ''
+    };
+    _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
+    _this.onSubmit = _this.onSubmit.bind(_assertThisInitialized(_this));
+    return _this;
   }
 
   _createClass(newAlbum, [{
+    key: "handleChange",
+    value: function handleChange(e) {
+      this.setState(_defineProperty({}, e.target.name, e.target.value));
+    }
+  }, {
+    key: "onSubmit",
+    value: function onSubmit(e) {
+      var form = {
+        pochette: this.state.pochette,
+        nom_artiste: this.state.nom_artiste,
+        nom_album: this.state.nom_album,
+        genre: this.state.genre,
+        prodyear: this.state.prodyear,
+        label: this.state.label,
+        songs: this.state.songs,
+        note: this.state.note
+      };
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/api/albums', form).then(function (response) {
+        this.props.history.push('/albums');
+      }).catch(function (error) {
+        console.log(error);
+      });
+      this.setState({
+        pochette: '',
+        nom_artiste: '',
+        nom_album: '',
+        genre: '',
+        prodyear: '',
+        label: '',
+        songs: '',
+        note: ''
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
-      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", null, "noice");
+      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("link", {
+        rel: "stylesheet",
+        type: "text/css",
+        href: "./css/newAlbum.css"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "container"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("p", {
+        class: "h2 text-center"
+      }, "Add an album"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("form", {
+        action: this.handleSubmit,
+        method: "post"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "preview text-center"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
+        class: "preview-img",
+        src: "http://simpleicon.com/wp-content/uploads/account.png",
+        alt: "Preview Image",
+        width: "200",
+        height: "200"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "browse-button"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("i", {
+        class: "fa fa-pencil-alt"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "browse-input",
+        type: "file",
+        required: true,
+        name: "pochette",
+        id: "pochette"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Artist Name:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "nom_artiste",
+        required: true,
+        placeholder: "Name of the artist"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Album Name:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "nom_album",
+        required: true,
+        placeholder: "Name of the album"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Genre:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "genre",
+        required: true,
+        placeholder: "Genre"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Year of release:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "prodyear",
+        required: true,
+        placeholder: "Year of release"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Label:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "label",
+        required: true,
+        placeholder: "Label releasing the album"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Score ( /5):"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "note",
+        required: true,
+        placeholder: "Score"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, "Song List:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+        onChange: this.handleChange,
+        class: "form-control",
+        type: "text",
+        name: "songs",
+        required: true,
+        placeholder: "Songs"
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        class: "Error"
+      })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        class: "form-group"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("button", {
+        onClick: this.onSubmit,
+        class: "btn btn-primary btn-block",
+        type: "submit",
+        value: "Submit"
+      })))));
     }
   }]);
 
