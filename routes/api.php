@@ -12,11 +12,8 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::middleware('auth:api')->get('/albums', 'AlbumController@index')->name('albums.all');
 
 Route::middleware('auth:api')->post('/albums', 'AlbumController@store')->name('albums.store');
-
-Route::middleware('auth:api')->get('/albums/{album}', 'AlbumController@show')->name('albums.show');
 
 Route::middleware('auth:api')->put('/albums/{album}', 'AlbumController@update')->name('albums.update');
 
@@ -25,6 +22,10 @@ Route::middleware('auth:api')->delete('/albums/{album}', 'AlbumController@destro
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/albums', 'AlbumController@index')->name('albums.all');
+
+Route::get('/albums/{album}', 'AlbumController@show')->name('albums.show');
 
 Route::post('/register', 'AuthController@register');
 

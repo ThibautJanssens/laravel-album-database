@@ -16,6 +16,6 @@ class UsersController extends Controller
 
   public function postInfos(Request $request)
   {
-    return 'Le nom est ' . $request->input('nom');
+    return 'Name is ' . $request->input('nom');
   }
 }
