@@ -12,19 +12,24 @@ import SignUp from './SignUp';
 class App extends Component {
     render () {
         return (
-          <BrowserRouter>
-            <div>
-              <Header />
-              <Switch>
-                <Route exact path='/' component={Home} />
-                <Route exact path='/albums' component={Albums} />
-                <Route exact path='/newAlbum' component={newAlbum} />
-                <Route exact path='/album/:id' component={Album} />
-                <Route exact path='/login' component={Login} />
-                <Route exact path='/register' component={SignUp} />
-              </Switch>
-            </div>
-          </BrowserRouter>
+        <React.Fragment>
+            <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
+            <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+            <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+            <BrowserRouter>
+                <div>
+                <Header />
+                <Switch>
+                    <Route exact path='/' component={Home} />
+                    <Route exact path='/albums' component={Albums} />
+                    <Route exact path='/newAlbum' component={newAlbum} />
+                    <Route exact path='/album/:id' component={Album} />
+                    <Route exact path='/login' component={Login} />
+                    <Route exact path='/register' component={SignUp} />
+                </Switch>
+                </div>
+            </BrowserRouter>
+        </React.Fragment>
         )
       }
     }

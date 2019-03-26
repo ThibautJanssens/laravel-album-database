@@ -13,19 +13,25 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->post('/albums', 'AlbumController@store')->name('albums.store');
+// Route::middleware('auth:api')->post('/albums', 'AlbumController@store')->name('albums.store');
 
-Route::middleware('auth:api')->put('/albums/{album}', 'AlbumController@update')->name('albums.update');
+// Route::middleware('auth:api')->put('/albums/{album}', 'AlbumController@update')->name('albums.update');
 
-Route::middleware('auth:api')->delete('/albums/{album}', 'AlbumController@destroy')->name('albums.destroy');
+// Route::middleware('auth:api')->delete('/albums/{album}', 'AlbumController@destroy')->name('albums.destroy');
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 Route::get('/albums', 'AlbumController@index')->name('albums.all');
 
+Route::post('/albums', 'AlbumController@store')->name('albums.store');
+
+Route::put('/albums/{album}', 'AlbumController@update')->name('albums.update');
+
 Route::get('/albums/{album}', 'AlbumController@show')->name('albums.show');
+
+Route::delete('/albums/{album}', 'AlbumController@destroy')->name('albums.destroy');
 
 Route::post('/register', 'AuthController@register');
 
