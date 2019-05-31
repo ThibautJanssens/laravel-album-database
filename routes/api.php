@@ -23,7 +23,7 @@ Route::get('/albums', 'AlbumController@index')->name('albums.all');
 //post insert album
 Route::post('/album', 'AlbumController@store')->name('album.store');
 //put edit album
-Route::put('/album/{id}', 'AlbumController@update')->('album.update');
+Route::put('/album/{id}', 'AlbumController@update')->name('album.update');
 
 //-------------- ARTISTS --------------
 //get all artists
@@ -31,7 +31,7 @@ Route::get('/artists', 'ArtistController@index')->name('artists.all');
 //post insert artist
 Route::post('/artist', 'ArtistController@store')->name('artist.store');
 //put edit artist
-Route::put('/artist/{id}', 'ArtistController@update')->('artist.update');
+Route::put('/artist/{id}', 'ArtistController@update')->name('artist.update');
 
 //-------------- SONGS --------------
 //get all songs
@@ -39,7 +39,7 @@ Route::get('/songs', 'SongController@index')->name('songs.all');
 //post insert song
 Route::post('/song', 'SongController@store')->name('song.store');
 //put edit song
-Route::put('/song/{id}', 'SongController@update')->('song.update');
+Route::put('/song/{id}', 'SongController@update')->name('song.update');
 
 //-------------- GENRES --------------
 //get all genres
@@ -47,7 +47,7 @@ Route::get('/genres', 'GenreController@index')->name('genres.all');
 //post insert genre
 Route::post('/genre', 'GenreController@store')->name('genre.store');
 //put edit genre
-Route::put('/genre/{id}', 'GenreController@update')->('genre.update');
+Route::put('/genre/{id}', 'GenreController@update')->name('genre.update');
 
 //-------------- USERS --------------
 //register
