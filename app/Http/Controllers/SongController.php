@@ -25,8 +25,8 @@ class SongController extends Controller
      */
     public function store(Request $request)
     {
-        $query = DB::insert('INSERT INTO songs() values (?,?)', 
-            []);
+        $query = DB::insert('INSERT INTO songs(title, duration, album, artist, genre) values (?,?,?,?,?)', 
+            [$request->title, $request->duration, $request->album, $request->artist, $request->genre]);
         return response()->json(['message' => 'Record saved.']);
     }
     
@@ -39,8 +39,10 @@ class SongController extends Controller
     public function show($id)
     {
         $ret = DB::table('songs')
+                ->join('albums', 'songs.album', '=', 'albums.id')
+                ->join('artists', 'songs.artist','=','artists.id')
                 ->join('genres', 'songs.genre', '=', 'genres.id')
-                ->select('genres.name')
+                ->select('artists.name, albums.name, genres.name, songs.*')
                 ->where('songs.id','=', $id)
                 ->get();
         return $ret;            

@@ -44,6 +44,8 @@ Route::put('/artist/{id}', 'ArtistController@update')->name('artist.update');
 //-------------- SONGS --------------
 //get all songs
 Route::get('/songs', 'SongController@index')->name('songs.all');
+//get a song
+Route::get('/song/{id}', 'SongController@show')->name('song.show');
 //post insert song
 Route::post('/song', 'SongController@store')->name('song.store');
 //put edit song
