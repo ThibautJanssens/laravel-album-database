@@ -27,6 +27,4 @@ class AlbumController extends Controller
     {
         
     }
-
-    
 }

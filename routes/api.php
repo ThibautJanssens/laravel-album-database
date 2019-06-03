@@ -20,6 +20,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //-------------- ALBUMS --------------
 //get all albums
 Route::get('/albums', 'AlbumController@index')->name('albums.all');
+//get an album
+Route::get('album/{id}', 'AlbumController@show')->name('album.show');
+//get all albums by specific date
+Route::get('/albumsByDate/{date}', 'AlbumController@getByDate')->name('albums.date');
+//Get all albums by genre
+Route::get('/albumsByGenre/{genre}', 'AlbumController@getByGenre')->name('albums.genre');
 //post insert album
 Route::post('/album', 'AlbumController@store')->name('album.store');
 //put edit album
@@ -28,6 +34,8 @@ Route::put('/album/{id}', 'AlbumController@update')->name('album.update');
 //-------------- ARTISTS --------------
 //get all artists
 Route::get('/artists', 'ArtistController@index')->name('artists.all');
+//get an artist
+Route::get('/artist/{id}', 'ArtistController@show')->name('artist.show');
 //post insert artist
 Route::post('/artist', 'ArtistController@store')->name('artist.store');
 //put edit artist
