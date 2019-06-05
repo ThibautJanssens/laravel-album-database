@@ -11,11 +11,11 @@ class Genre extends Model
     ];
 
     public function albums(){
-        return $this->belongsToMany('App\Albums', 'albums');
+        return $this->belongsToMany('App\Album', 'album');
     }
 
     public function songs(){
-        return $this->belongsToMany('App\Songs', 'songs');
+        return $this->belongsToMany('App\Song', 'song');
     }
 
     public function artists(){

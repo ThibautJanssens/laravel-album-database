@@ -42,7 +42,7 @@ class SongController extends Controller
                 ->join('albums', 'songs.album', '=', 'albums.id')
                 ->join('artists', 'songs.artist','=','artists.id')
                 ->join('genres', 'songs.genre', '=', 'genres.id')
-                ->select('artists.name, albums.name, genres.name, songs.*')
+                ->select('artists.name as artist, albums.name as album, genres.name as genre, songs.title, songs.duration')
                 ->where('songs.id','=', $id)
                 ->get();
         return $ret;            
@@ -57,8 +57,10 @@ class SongController extends Controller
      */
     public function update(Request $request, $id)
     {
-        DB::update('UPDATE songs SET  where id = ?', 
-            [$id]);
+        DB::update('UPDATE songs SET title = ?, duration = ?, album = ?, artist = ?, 
+            genre = ? where id = ?', 
+            [$request->title, $request->duration, $request->album, 
+            $request->artist, $request->genre, $id]);
         return response()->json(['message' => 'Record updated']);
     }
 }

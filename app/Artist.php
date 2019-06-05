@@ -12,11 +12,11 @@ class Artist extends Model
     ];
 
     public function albums(){
-        return $this->hasMany('App\Albums', 'albums');
+        return $this->hasMany('App\Album', 'album');
     }
 
     public function songs(){
-        return $this->hasMany('App\Songs', 'songs');
+        return $this->hasMany('App\Song', 'song');
     }
 
     public function genre(){

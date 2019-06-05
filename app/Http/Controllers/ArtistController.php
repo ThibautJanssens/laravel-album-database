@@ -39,7 +39,7 @@ class ArtistController extends Controller
     {
         $ret = DB::table('artists')
                 ->join('genres', 'artists.genre', '=', 'genres.id')
-                ->select('artists.name', 'genres.name')
+                ->select('artists.name as artist', 'genres.name as genre')
                 ->where('artists.id','=', $id)
                 ->get();
 
