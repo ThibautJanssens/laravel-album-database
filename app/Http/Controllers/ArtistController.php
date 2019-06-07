@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Artist;
+use Illuminate\Support\Facades\DB;
 
 class ArtistController extends Controller
 {
@@ -13,7 +15,7 @@ class ArtistController extends Controller
      */
     public function index()
     {
-        $artists = artists::all();
+        $artists = Artist::all();
         return response()->json($artists);
     }
 

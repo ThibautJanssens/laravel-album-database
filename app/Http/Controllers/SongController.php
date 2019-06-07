@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Song;
+use Illuminate\Support\Facades\DB;
 
 class SongController extends Controller
 {
@@ -13,7 +15,7 @@ class SongController extends Controller
      */
     public function index()
     {
-        $songs = songs::all();
+        $songs = Song::all();
         return response()->json($songs);
     }
 

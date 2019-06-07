@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Album;
+use Illuminate\Support\Facades\DB;
 
 class AlbumController extends Controller
 {
@@ -13,7 +15,7 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = albums::all();
+        $albums = Album::all();
         return response()->json($albums);
     }
 
